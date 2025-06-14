@@ -4,7 +4,6 @@
  */
 #pragma once
 
-// standard includes
 #include <utility>
 
 /**
@@ -15,7 +14,7 @@ namespace move_by_copy_util {
    * When a copy is made, it moves the object
    * This allows you to move an object when a move can't be done.
    */
-  template<class T>
+  template <class T>
   class MoveByCopy {
   public:
     typedef T move_type;
@@ -25,8 +24,7 @@ namespace move_by_copy_util {
 
   public:
     explicit MoveByCopy(move_type &&to_move):
-        _to_move(std::move(to_move)) {
-    }
+        _to_move(std::move(to_move)) {}
 
     MoveByCopy(MoveByCopy &&other) = default;
 
@@ -34,9 +32,11 @@ namespace move_by_copy_util {
       *this = other;
     }
 
-    MoveByCopy &operator=(MoveByCopy &&other) = default;
+    MoveByCopy &
+    operator=(MoveByCopy &&other) = default;
 
-    MoveByCopy &operator=(const MoveByCopy &other) {
+    MoveByCopy &
+    operator=(const MoveByCopy &other) {
       this->_to_move = std::move(const_cast<MoveByCopy &>(other)._to_move);
 
       return *this;
@@ -47,14 +47,16 @@ namespace move_by_copy_util {
     }
   };
 
-  template<class T>
-  MoveByCopy<T> cmove(T &movable) {
+  template <class T>
+  MoveByCopy<T>
+  cmove(T &movable) {
     return MoveByCopy<T>(std::move(movable));
   }
 
   // Do NOT use this unless you are absolutely certain the object to be moved is no longer used by the caller
-  template<class T>
-  MoveByCopy<T> const_cmove(const T &movable) {
+  template <class T>
+  MoveByCopy<T>
+  const_cmove(const T &movable) {
     return MoveByCopy<T>(std::move(const_cast<T &>(movable)));
   }
 }  // namespace move_by_copy_util

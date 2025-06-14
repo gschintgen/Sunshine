@@ -2,7 +2,6 @@
  * @file src/nvenc/nvenc_d3d11.cpp
  * @brief Definitions for abstract Direct3D11 NVENC encoder.
  */
-// local includes
 #include "src/logging.h"
 
 #ifdef _WIN32
@@ -10,25 +9,16 @@
 
 namespace nvenc {
 
-  nvenc_d3d11::nvenc_d3d11(NV_ENC_DEVICE_TYPE device_type):
-      nvenc_base(device_type) {
-    async_event_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
-  }
-
   nvenc_d3d11::~nvenc_d3d11() {
     if (dll) {
       FreeLibrary(dll);
       dll = NULL;
     }
-    if (async_event_handle) {
-      CloseHandle(async_event_handle);
-    }
   }
 
-  bool nvenc_d3d11::init_library() {
-    if (dll) {
-      return true;
-    }
+  bool
+  nvenc_d3d11::init_library() {
+    if (dll) return true;
 
   #ifdef _WIN64
     constexpr auto dll_name = "nvEncodeAPI64.dll";
@@ -42,14 +32,17 @@ namespace nvenc {
         new_nvenc->version = min_struct_version(NV_ENCODE_API_FUNCTION_LIST_VER);
         if (nvenc_failed(create_instance(new_nvenc.get()))) {
           BOOST_LOG(error) << "NvEnc: NvEncodeAPICreateInstance() failed: " << last_nvenc_error_string;
-        } else {
+        }
+        else {
           nvenc = std::move(new_nvenc);
           return true;
         }
-      } else {
+      }
+      else {
         BOOST_LOG(error) << "NvEnc: No NvEncodeAPICreateInstance() in " << dll_name;
       }
-    } else {
+    }
+    else {
       BOOST_LOG(debug) << "NvEnc: Couldn't load NvEnc library " << dll_name;
     }
 
@@ -59,10 +52,6 @@ namespace nvenc {
     }
 
     return false;
-  }
-
-  bool nvenc_d3d11::wait_for_async_event(uint32_t timeout_ms) {
-    return WaitForSingleObject(async_event_handle, timeout_ms) == WAIT_OBJECT_0;
   }
 
 }  // namespace nvenc

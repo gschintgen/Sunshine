@@ -2,16 +2,15 @@
  * @file src/nvenc/nvenc_utils.cpp
  * @brief Definitions for NVENC utilities.
  */
-// standard includes
 #include <cassert>
 
-// local includes
 #include "nvenc_utils.h"
 
 namespace nvenc {
 
 #ifdef _WIN32
-  DXGI_FORMAT dxgi_format_from_nvenc_format(NV_ENC_BUFFER_FORMAT format) {
+  DXGI_FORMAT
+  dxgi_format_from_nvenc_format(NV_ENC_BUFFER_FORMAT format) {
     switch (format) {
       case NV_ENC_BUFFER_FORMAT_YUV420_10BIT:
         return DXGI_FORMAT_P010;
@@ -31,7 +30,8 @@ namespace nvenc {
   }
 #endif
 
-  NV_ENC_BUFFER_FORMAT nvenc_format_from_sunshine_format(platf::pix_fmt_e format) {
+  NV_ENC_BUFFER_FORMAT
+  nvenc_format_from_sunshine_format(platf::pix_fmt_e format) {
     switch (format) {
       case platf::pix_fmt_e::nv12:
         return NV_ENC_BUFFER_FORMAT_NV12;
@@ -50,7 +50,8 @@ namespace nvenc {
     }
   }
 
-  nvenc_colorspace_t nvenc_colorspace_from_sunshine_colorspace(const video::sunshine_colorspace_t &sunshine_colorspace) {
+  nvenc_colorspace_t
+  nvenc_colorspace_from_sunshine_colorspace(const video::sunshine_colorspace_t &sunshine_colorspace) {
     nvenc_colorspace_t colorspace;
 
     switch (sunshine_colorspace.colorspace) {

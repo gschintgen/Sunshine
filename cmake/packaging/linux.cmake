@@ -100,31 +100,15 @@ endif()
 
 # tray icon
 if(${SUNSHINE_TRAY} STREQUAL 1)
-    if(NOT ${SUNSHINE_BUILD_FLATPAK})
-        install(FILES "${CMAKE_SOURCE_DIR}/sunshine.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
-                RENAME "sunshine-tray.svg")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-playing.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-pausing.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-locked.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
-    else()
-        # flatpak icons must be prefixed with the app id or they will not be included in the flatpak
-        install(FILES "${CMAKE_SOURCE_DIR}/sunshine.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
-                RENAME "${PROJECT_FQDN}-tray.svg")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-playing.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
-                RENAME "${PROJECT_FQDN}-playing.svg")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-pausing.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
-                RENAME "${PROJECT_FQDN}-pausing.svg")
-        install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-locked.svg"
-                DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
-                RENAME "${PROJECT_FQDN}-locked.svg")
-    endif()
+    install(FILES "${CMAKE_SOURCE_DIR}/sunshine.svg"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status"
+            RENAME "sunshine-tray.svg")
+    install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-playing.svg"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
+    install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-pausing.svg"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
+    install(FILES "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/web/public/images/sunshine-locked.svg"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/status")
 
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "\
                     ${CPACK_DEBIAN_PACKAGE_DEPENDS}, \
@@ -136,13 +120,33 @@ if(${SUNSHINE_TRAY} STREQUAL 1)
 endif()
 
 # desktop file
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_FQDN}.desktop"
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-if(NOT ${SUNSHINE_BUILD_APPIMAGE} AND NOT ${SUNSHINE_BUILD_FLATPAK})
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_FQDN}.terminal.desktop"
+# todo - validate desktop files with `desktop-file-validate`
+if(NOT ${SUNSHINE_BUILD_FLATPAK})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine.desktop"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+else()
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine.desktop"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications"
+            RENAME "${PROJECT_FQDN}.desktop")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine_kms.desktop"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications"
+            RENAME "${PROJECT_FQDN}_kms.desktop")
+endif()
+if(${SUNSHINE_BUILD_FLATPAK})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine_terminal.desktop"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications"
+            RENAME "${PROJECT_FQDN}_terminal.desktop")
+elseif(NOT ${SUNSHINE_BUILD_APPIMAGE})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine_terminal.desktop"
             DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
 endif()
 
 # metadata file
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_FQDN}.metainfo.xml"
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
+# todo - validate file with `appstream-util validate-relax`
+if(NOT ${SUNSHINE_BUILD_FLATPAK})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/sunshine.appdata.xml"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
+else()
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_FQDN}.metainfo.xml"
+            DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
+endif()

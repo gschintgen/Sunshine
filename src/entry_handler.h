@@ -18,7 +18,8 @@
  * launch_ui();
  * @examples_end
  */
-void launch_ui();
+void
+launch_ui();
 
 /**
  * @brief Launch the Web UI at a specific endpoint.
@@ -26,7 +27,8 @@ void launch_ui();
  * launch_ui_with_path("/pin");
  * @examples_end
  */
-void launch_ui_with_path(std::string path);
+void
+launch_ui_with_path(std::string path);
 
 /**
  * @brief Functions for handling command line arguments.
@@ -41,7 +43,8 @@ namespace args {
    * creds("sunshine", 2, {"new_username", "new_password"});
    * @examples_end
    */
-  int creds(const char *name, int argc, char *argv[]);
+  int
+  creds(const char *name, int argc, char *argv[]);
 
   /**
    * @brief Print help to stdout, then exit.
@@ -50,7 +53,8 @@ namespace args {
    * help("sunshine");
    * @examples_end
    */
-  int help(const char *name);
+  int
+  help(const char *name);
 
   /**
    * @brief Print the version to stdout, then exit.
@@ -58,7 +62,8 @@ namespace args {
    * version();
    * @examples_end
    */
-  int version();
+  int
+  version();
 
 #ifdef _WIN32
   /**
@@ -70,7 +75,8 @@ namespace args {
    * restore_nvprefs_undo();
    * @examples_end
    */
-  int restore_nvprefs_undo();
+  int
+  restore_nvprefs_undo();
 #endif
 }  // namespace args
 
@@ -86,30 +92,35 @@ namespace lifetime {
    * @param exit_code The exit code to return from main().
    * @param async Specifies whether our termination will be non-blocking.
    */
-  void exit_sunshine(int exit_code, bool async);
+  void
+  exit_sunshine(int exit_code, bool async);
 
   /**
    * @brief Breaks into the debugger or terminates Sunshine if no debugger is attached.
    */
-  void debug_trap();
+  void
+  debug_trap();
 
   /**
    * @brief Get the argv array passed to main().
    */
-  char **get_argv();
+  char **
+  get_argv();
 }  // namespace lifetime
 
 /**
  * @brief Log the publisher metadata provided from CMake.
  */
-void log_publisher_data();
+void
+log_publisher_data();
 
 #ifdef _WIN32
 /**
  * @brief Check if NVIDIA's GameStream software is running.
  * @return `true` if GameStream is enabled, `false` otherwise.
  */
-bool is_gamestream_enabled();
+bool
+is_gamestream_enabled();
 
 /**
  * @brief Namespace for controlling the Sunshine service model on Windows.
@@ -121,7 +132,8 @@ namespace service_ctrl {
    * is_service_running();
    * @examples_end
    */
-  bool is_service_running();
+  bool
+  is_service_running();
 
   /**
    * @brief Start the service and wait for startup to complete.
@@ -129,7 +141,8 @@ namespace service_ctrl {
    * start_service();
    * @examples_end
    */
-  bool start_service();
+  bool
+  start_service();
 
   /**
    * @brief Wait for the UI to be ready after Sunshine startup.
@@ -137,6 +150,7 @@ namespace service_ctrl {
    * wait_for_ui_ready();
    * @examples_end
    */
-  bool wait_for_ui_ready();
+  bool
+  wait_for_ui_ready();
 }  // namespace service_ctrl
 #endif

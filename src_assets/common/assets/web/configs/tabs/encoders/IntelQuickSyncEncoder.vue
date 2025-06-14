@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import Checkbox from "../../../Checkbox.vue";
 
 const props = defineProps([
   'platform',
@@ -37,12 +36,15 @@ const config = ref(props.config)
     </div>
 
     <!-- Allow Slow HEVC Encoding -->
-    <Checkbox class="mb-3"
-              id="qsv_slow_hevc"
-              locale-prefix="config"
-              v-model="config.qsv_slow_hevc"
-              default="false"
-    ></Checkbox>
+    <div class="mb-3">
+      <label for="qsv_slow_hevc" class="form-label">{{ $t('config.qsv_slow_hevc') }}</label>
+      <select id="qsv_slow_hevc" class="form-select" v-model="config.qsv_slow_hevc">
+        <option value="disabled">{{ $t('_common.disabled_def') }}</option>
+        <option value="enabled">{{ $t('_common.enabled') }}</option>
+      </select>
+      <div class="form-text">{{ $t('config.qsv_slow_hevc_desc') }}</div>
+    </div>
+
   </div>
 </template>
 

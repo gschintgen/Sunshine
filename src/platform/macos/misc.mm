@@ -8,28 +8,22 @@
   #define __APPLE_USE_RFC_3542 1
 #endif
 
-// standard includes
-#include <fcntl.h>
-#include <ifaddrs.h>
-
-// platform includes
+#include <Foundation/Foundation.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
-#include <Foundation/Foundation.h>
+#include <fcntl.h>
+#include <ifaddrs.h>
 #include <mach-o/dyld.h>
 #include <net/if_dl.h>
 #include <pwd.h>
 
-// lib includes
-#include <boost/asio/ip/address.hpp>
-#include <boost/asio/ip/host_name.hpp>
-#include <boost/process/v1.hpp>
-
-// local includes
 #include "misc.h"
 #include "src/entry_handler.h"
 #include "src/logging.h"
 #include "src/platform/common.h"
+
+#include <boost/asio/ip/address.hpp>
+#include <boost/process/v1.hpp>
 
 using namespace std::literals;
 namespace fs = std::filesystem;
@@ -42,20 +36,14 @@ namespace platf {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < 110000  // __MAC_11_0
   // If they're not in the SDK then we can use our own function definitions.
   // Need to use weak import so that this will link in macOS 10.14 and earlier
-  extern "C" bool CGPreflightScreenCaptureAccess(void) __attribute__((weak_import));
-  extern "C" bool CGRequestScreenCaptureAccess(void) __attribute__((weak_import));
+  extern "C" bool
+  CGPreflightScreenCaptureAccess(void) __attribute__((weak_import));
+  extern "C" bool
+  CGRequestScreenCaptureAccess(void) __attribute__((weak_import));
 #endif
 
-  namespace {
-    auto screen_capture_allowed = std::atomic<bool> {false};
-  }  // namespace
-
-  // Return whether screen capture is allowed for this process.
-  bool is_screen_capture_allowed() {
-    return screen_capture_allowed;
-  }
-
-  std::unique_ptr<deinit_t> init() {
+  std::unique_ptr<deinit_t>
+  init() {
     // This will generate a warning about CGPreflightScreenCaptureAccess and
     // CGRequestScreenCaptureAccess being unavailable before macOS 10.15, but
     // we have a guard to prevent it from being called on those earlier systems.
@@ -70,7 +58,7 @@ namespace platf {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
-    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:((NSOperatingSystemVersion) {10, 15, 0})] &&
+    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:((NSOperatingSystemVersion) { 10, 15, 0 })] &&
         // Double check that these weakly-linked symbols have been loaded:
         CGPreflightScreenCaptureAccess != nullptr && CGRequestScreenCaptureAccess != nullptr &&
         !CGPreflightScreenCaptureAccess()) {
@@ -80,60 +68,69 @@ namespace platf {
       return nullptr;
     }
 #pragma clang diagnostic pop
-    // Record that we determined that we have the screen capture permission.
-    screen_capture_allowed = true;
     return std::make_unique<deinit_t>();
   }
 
-  fs::path appdata() {
+  fs::path
+  appdata() {
     const char *homedir;
     if ((homedir = getenv("HOME")) == nullptr) {
       homedir = getpwuid(geteuid())->pw_dir;
     }
 
-    return fs::path {homedir} / ".config/sunshine"sv;
+    return fs::path { homedir } / ".config/sunshine"sv;
   }
 
   using ifaddr_t = util::safe_ptr<ifaddrs, freeifaddrs>;
 
-  ifaddr_t get_ifaddrs() {
-    ifaddrs *p {nullptr};
+  ifaddr_t
+  get_ifaddrs() {
+    ifaddrs *p { nullptr };
 
     getifaddrs(&p);
 
-    return ifaddr_t {p};
+    return ifaddr_t { p };
   }
 
-  std::string from_sockaddr(const sockaddr *const ip_addr) {
+  std::string
+  from_sockaddr(const sockaddr *const ip_addr) {
     char data[INET6_ADDRSTRLEN] = {};
 
     auto family = ip_addr->sa_family;
     if (family == AF_INET6) {
-      inet_ntop(AF_INET6, &((sockaddr_in6 *) ip_addr)->sin6_addr, data, INET6_ADDRSTRLEN);
-    } else if (family == AF_INET) {
-      inet_ntop(AF_INET, &((sockaddr_in *) ip_addr)->sin_addr, data, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET6, &((sockaddr_in6 *) ip_addr)->sin6_addr, data,
+        INET6_ADDRSTRLEN);
+    }
+    else if (family == AF_INET) {
+      inet_ntop(AF_INET, &((sockaddr_in *) ip_addr)->sin_addr, data,
+        INET_ADDRSTRLEN);
     }
 
-    return std::string {data};
+    return std::string { data };
   }
 
-  std::pair<std::uint16_t, std::string> from_sockaddr_ex(const sockaddr *const ip_addr) {
+  std::pair<std::uint16_t, std::string>
+  from_sockaddr_ex(const sockaddr *const ip_addr) {
     char data[INET6_ADDRSTRLEN] = {};
 
     auto family = ip_addr->sa_family;
     std::uint16_t port = 0;
     if (family == AF_INET6) {
-      inet_ntop(AF_INET6, &((sockaddr_in6 *) ip_addr)->sin6_addr, data, INET6_ADDRSTRLEN);
+      inet_ntop(AF_INET6, &((sockaddr_in6 *) ip_addr)->sin6_addr, data,
+        INET6_ADDRSTRLEN);
       port = ((sockaddr_in6 *) ip_addr)->sin6_port;
-    } else if (family == AF_INET) {
-      inet_ntop(AF_INET, &((sockaddr_in *) ip_addr)->sin_addr, data, INET_ADDRSTRLEN);
+    }
+    else if (family == AF_INET) {
+      inet_ntop(AF_INET, &((sockaddr_in *) ip_addr)->sin_addr, data,
+        INET_ADDRSTRLEN);
       port = ((sockaddr_in *) ip_addr)->sin_port;
     }
 
-    return {port, std::string {data}};
+    return { port, std::string { data } };
   }
 
-  std::string get_mac_address(const std::string_view &address) {
+  std::string
+  get_mac_address(const std::string_view &address) {
     auto ifaddrs = get_ifaddrs();
 
     for (auto pos = ifaddrs.get(); pos != nullptr; pos = pos->ifa_next) {
@@ -150,7 +147,8 @@ namespace platf {
               ptr = (unsigned char *) LLADDR((struct sockaddr_dl *) (ifaptr)->ifa_addr);
               char buff[100];
 
-              snprintf(buff, sizeof(buff), "%02x:%02x:%02x:%02x:%02x:%02x", *ptr, *(ptr + 1), *(ptr + 2), *(ptr + 3), *(ptr + 4), *(ptr + 5));
+              snprintf(buff, sizeof(buff), "%02x:%02x:%02x:%02x:%02x:%02x",
+                *ptr, *(ptr + 1), *(ptr + 2), *(ptr + 3), *(ptr + 4), *(ptr + 5));
               mac_address = buff;
               break;
             }
@@ -170,32 +168,32 @@ namespace platf {
     return "00:00:00:00:00:00"s;
   }
 
-  bp::child run_command(bool elevated, bool interactive, const std::string &cmd, boost::filesystem::path &working_dir, const bp::environment &env, FILE *file, std::error_code &ec, bp::group *group) {
-    // clang-format off
+  bp::child
+  run_command(bool elevated, bool interactive, const std::string &cmd, boost::filesystem::path &working_dir, const bp::environment &env, FILE *file, std::error_code &ec, bp::group *group) {
     if (!group) {
       if (!file) {
-        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_in < bp::null, bp::std_out > bp::null, bp::std_err > bp::null, bp::limit_handles, ec);
+        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_out > bp::null, bp::std_err > bp::null, ec);
       }
       else {
-        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_in < bp::null, bp::std_out > file, bp::std_err > file, bp::limit_handles, ec);
+        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_out > file, bp::std_err > file, ec);
       }
     }
     else {
       if (!file) {
-        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_in < bp::null, bp::std_out > bp::null, bp::std_err > bp::null, bp::limit_handles, ec, *group);
+        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_out > bp::null, bp::std_err > bp::null, ec, *group);
       }
       else {
-        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_in < bp::null, bp::std_out > file, bp::std_err > file, bp::limit_handles, ec, *group);
+        return bp::child(cmd, env, bp::start_dir(working_dir), bp::std_out > file, bp::std_err > file, ec, *group);
       }
     }
-    // clang-format on
   }
 
   /**
    * @brief Open a url in the default web browser.
    * @param url The url to open.
    */
-  void open_url(const std::string &url) {
+  void
+  open_url(const std::string &url) {
     boost::filesystem::path working_dir;
     std::string cmd = R"(open ")" + url + R"(")";
 
@@ -204,25 +202,30 @@ namespace platf {
     auto child = run_command(false, false, cmd, working_dir, _env, nullptr, ec, nullptr);
     if (ec) {
       BOOST_LOG(warning) << "Couldn't open url ["sv << url << "]: System: "sv << ec.message();
-    } else {
+    }
+    else {
       BOOST_LOG(info) << "Opened url ["sv << url << "]"sv;
       child.detach();
     }
   }
 
-  void adjust_thread_priority(thread_priority_e priority) {
+  void
+  adjust_thread_priority(thread_priority_e priority) {
     // Unimplemented
   }
 
-  void streaming_will_start() {
+  void
+  streaming_will_start() {
     // Nothing to do
   }
 
-  void streaming_will_stop() {
+  void
+  streaming_will_stop() {
     // Nothing to do
   }
 
-  void restart_on_exit() {
+  void
+  restart_on_exit() {
     char executable[2048];
     uint32_t size = sizeof(executable);
     if (_NSGetExecutablePath(executable, &size) < 0) {
@@ -243,35 +246,42 @@ namespace platf {
     }
   }
 
-  void restart() {
+  void
+  restart() {
     // Gracefully clean up and restart ourselves instead of exiting
     atexit(restart_on_exit);
     lifetime::exit_sunshine(0, true);
   }
 
-  int set_env(const std::string &name, const std::string &value) {
+  int
+  set_env(const std::string &name, const std::string &value) {
     return setenv(name.c_str(), value.c_str(), 1);
   }
 
-  int unset_env(const std::string &name) {
+  int
+  unset_env(const std::string &name) {
     return unsetenv(name.c_str());
   }
 
-  bool request_process_group_exit(std::uintptr_t native_handle) {
+  bool
+  request_process_group_exit(std::uintptr_t native_handle) {
     if (killpg((pid_t) native_handle, SIGTERM) == 0 || errno == ESRCH) {
       BOOST_LOG(debug) << "Successfully sent SIGTERM to process group: "sv << native_handle;
       return true;
-    } else {
+    }
+    else {
       BOOST_LOG(warning) << "Unable to send SIGTERM to process group ["sv << native_handle << "]: "sv << errno;
       return false;
     }
   }
 
-  bool process_group_running(std::uintptr_t native_handle) {
+  bool
+  process_group_running(std::uintptr_t native_handle) {
     return waitpid(-((pid_t) native_handle), nullptr, WNOHANG) >= 0;
   }
 
-  struct sockaddr_in to_sockaddr(boost::asio::ip::address_v4 address, uint16_t port) {
+  struct sockaddr_in
+  to_sockaddr(boost::asio::ip::address_v4 address, uint16_t port) {
     struct sockaddr_in saddr_v4 = {};
 
     saddr_v4.sin_family = AF_INET;
@@ -283,7 +293,8 @@ namespace platf {
     return saddr_v4;
   }
 
-  struct sockaddr_in6 to_sockaddr(boost::asio::ip::address_v6 address, uint16_t port) {
+  struct sockaddr_in6
+  to_sockaddr(boost::asio::ip::address_v6 address, uint16_t port) {
     struct sockaddr_in6 saddr_v6 = {};
 
     saddr_v6.sin6_family = AF_INET6;
@@ -296,12 +307,14 @@ namespace platf {
     return saddr_v6;
   }
 
-  bool send_batch(batched_send_info_t &send_info) {
+  bool
+  send_batch(batched_send_info_t &send_info) {
     // Fall back to unbatched send calls
     return false;
   }
 
-  bool send(send_info_t &send_info) {
+  bool
+  send(send_info_t &send_info) {
     auto sockfd = (int) send_info.native_socket;
     struct msghdr msg = {};
 
@@ -313,7 +326,8 @@ namespace platf {
 
       msg.msg_name = (struct sockaddr *) &taddr_v6;
       msg.msg_namelen = sizeof(taddr_v6);
-    } else {
+    }
+    else {
       taddr_v4 = to_sockaddr(send_info.target_address.to_v4(), send_info.target_port);
 
       msg.msg_name = (struct sockaddr *) &taddr_v4;
@@ -324,7 +338,6 @@ namespace platf {
       char buf[std::max(CMSG_SPACE(sizeof(struct in_pktinfo)), CMSG_SPACE(sizeof(struct in6_pktinfo)))];
       struct cmsghdr alignment;
     } cmbuf {};
-
     socklen_t cmbuflen = 0;
 
     msg.msg_control = cmbuf.buf;
@@ -344,7 +357,8 @@ namespace platf {
       pktinfo_cm->cmsg_type = IPV6_PKTINFO;
       pktinfo_cm->cmsg_len = CMSG_LEN(sizeof(pktInfo));
       memcpy(CMSG_DATA(pktinfo_cm), &pktInfo, sizeof(pktInfo));
-    } else {
+    }
+    else {
       struct in_pktinfo pktInfo {};
 
       struct sockaddr_in saddr_v4 = to_sockaddr(send_info.source_address.to_v4(), 0);
@@ -409,8 +423,7 @@ namespace platf {
   class qos_t: public deinit_t {
   public:
     qos_t(int sockfd, std::vector<std::tuple<int, int, int>> options):
-        sockfd(sockfd),
-        options(options) {
+        sockfd(sockfd), options(options) {
       qos_ref_count++;
     }
 
@@ -438,7 +451,8 @@ namespace platf {
    * @param data_type The type of traffic sent on this socket.
    * @param dscp_tagging Specifies whether to enable DSCP tagging on outgoing traffic.
    */
-  std::unique_ptr<deinit_t> enable_socket_qos(uintptr_t native_socket, boost::asio::ip::address &address, uint16_t port, qos_data_type_e data_type, bool dscp_tagging) {
+  std::unique_ptr<deinit_t>
+  enable_socket_qos(uintptr_t native_socket, boost::asio::ip::address &address, uint16_t port, qos_data_type_e data_type, bool dscp_tagging) {
     int sockfd = (int) native_socket;
     std::vector<std::tuple<int, int, int>> reset_options;
 
@@ -460,7 +474,8 @@ namespace platf {
       if (setsockopt(sockfd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &service_type, sizeof(service_type)) == 0) {
         // Reset SO_NET_SERVICE_TYPE to best-effort when QoS is disabled
         reset_options.emplace_back(std::make_tuple(SOL_SOCKET, SO_NET_SERVICE_TYPE, NET_SERVICE_TYPE_BE));
-      } else {
+      }
+      else {
         BOOST_LOG(error) << "Failed to set SO_NET_SERVICE_TYPE: "sv << errno;
       }
     }
@@ -471,7 +486,8 @@ namespace platf {
       if (address.is_v6()) {
         level = IPPROTO_IPV6;
         option = IPV6_TCLASS;
-      } else {
+      }
+      else {
         level = IPPROTO_IP;
         option = IP_TOS;
       }
@@ -498,7 +514,8 @@ namespace platf {
         if (setsockopt(sockfd, level, option, &dscp, sizeof(dscp)) == 0) {
           // Reset TOS to -1 when QoS is disabled
           reset_options.emplace_back(std::make_tuple(level, option, -1));
-        } else {
+        }
+        else {
           BOOST_LOG(error) << "Failed to set TOS/TCLASS: "sv << errno;
         }
       }
@@ -507,18 +524,10 @@ namespace platf {
     return std::make_unique<qos_t>(sockfd, reset_options);
   }
 
-  std::string get_host_name() {
-    try {
-      return boost::asio::ip::host_name();
-    } catch (boost::system::system_error &err) {
-      BOOST_LOG(error) << "Failed to get hostname: "sv << err.what();
-      return "Sunshine"s;
-    }
-  }
-
   class macos_high_precision_timer: public high_precision_timer {
   public:
-    void sleep_for(const std::chrono::nanoseconds &duration) override {
+    void
+    sleep_for(const std::chrono::nanoseconds &duration) override {
       std::this_thread::sleep_for(duration);
     }
 
@@ -527,13 +536,15 @@ namespace platf {
     }
   };
 
-  std::unique_ptr<high_precision_timer> create_high_precision_timer() {
+  std::unique_ptr<high_precision_timer>
+  create_high_precision_timer() {
     return std::make_unique<macos_high_precision_timer>();
   }
 }  // namespace platf
 
 namespace dyn {
-  void *handle(const std::vector<const char *> &libs) {
+  void *
+  handle(const std::vector<const char *> &libs) {
     void *handle;
 
     for (auto lib : libs) {
@@ -556,7 +567,8 @@ namespace dyn {
     return nullptr;
   }
 
-  int load(void *handle, const std::vector<std::tuple<apiproc *, const char *>> &funcs, bool strict) {
+  int
+  load(void *handle, const std::vector<std::tuple<apiproc *, const char *>> &funcs, bool strict) {
     int err = 0;
     for (auto &func : funcs) {
       TUPLE_2D_REF(fn, name, func);

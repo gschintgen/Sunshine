@@ -4,20 +4,17 @@
  */
 #pragma once
 
-// platform includes
+#include "src/platform/common.h"
+
 #include <CoreMedia/CoreMedia.h>
 #include <CoreVideo/CoreVideo.h>
-
-// local includes
-#include "src/platform/common.h"
 
 namespace platf {
   struct av_sample_buf_t {
     CMSampleBufferRef buf;
 
     explicit av_sample_buf_t(CMSampleBufferRef buf):
-        buf((CMSampleBufferRef) CFRetain(buf)) {
-    }
+        buf((CMSampleBufferRef) CFRetain(buf)) {}
 
     ~av_sample_buf_t() {
       if (buf != nullptr) {
@@ -32,12 +29,12 @@ namespace platf {
     // Constructor
     explicit av_pixel_buf_t(CMSampleBufferRef sb):
         buf(
-          CMSampleBufferGetImageBuffer(sb)
-        ) {
+          CMSampleBufferGetImageBuffer(sb)) {
       CVPixelBufferLockBaseAddress(buf, kCVPixelBufferLock_ReadOnly);
     }
 
-    [[nodiscard]] uint8_t *data() const {
+    [[nodiscard]] uint8_t *
+    data() const {
       return static_cast<uint8_t *>(CVPixelBufferGetBaseAddress(buf));
     }
 
@@ -62,11 +59,8 @@ namespace platf {
     temp_retain_av_img_t(
       std::shared_ptr<av_sample_buf_t> sb,
       std::shared_ptr<av_pixel_buf_t> pb,
-      uint8_t *dt
-    ):
+      uint8_t *dt):
         sample_buffer(std::move(sb)),
-        pixel_buffer(std::move(pb)),
-        data(dt) {
-    }
+        pixel_buffer(std::move(pb)), data(dt) {}
   };
 }  // namespace platf

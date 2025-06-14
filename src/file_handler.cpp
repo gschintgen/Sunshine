@@ -12,7 +12,8 @@
 #include "logging.h"
 
 namespace file_handler {
-  std::string get_parent_directory(const std::string &path) {
+  std::string
+  get_parent_directory(const std::string &path) {
     // remove any trailing path separators
     std::string trimmed_path = path;
     while (!trimmed_path.empty() && trimmed_path.back() == '/') {
@@ -23,7 +24,8 @@ namespace file_handler {
     return p.parent_path().string();
   }
 
-  bool make_directory(const std::string &path) {
+  bool
+  make_directory(const std::string &path) {
     // first, check if the directory already exists
     if (std::filesystem::exists(path)) {
       return true;
@@ -32,17 +34,19 @@ namespace file_handler {
     return std::filesystem::create_directories(path);
   }
 
-  std::string read_file(const char *path) {
+  std::string
+  read_file(const char *path) {
     if (!std::filesystem::exists(path)) {
       BOOST_LOG(debug) << "Missing file: " << path;
       return {};
     }
 
     std::ifstream in(path);
-    return std::string {(std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()};
+    return std::string { (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>() };
   }
 
-  int write_file(const char *path, const std::string_view &contents) {
+  int
+  write_file(const char *path, const std::string_view &contents) {
     std::ofstream out(path);
 
     if (!out.is_open()) {

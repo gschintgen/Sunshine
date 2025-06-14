@@ -1,23 +1,19 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
+# This action is centrally managed in https://github.com/<organization>/.github/
 # Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
 # the above-mentioned repo.
 
-# To use, add the `rtd` repository label to identify repositories that should trigger this workflow.
+# Use the `rtd` repository label to identify repositories that should trigger have this workflow.
 # If the project slug is not the repository name, add a repository variable named `READTHEDOCS_SLUG` with the value of
 # the ReadTheDocs project slug.
 
 # Update readthedocs on release events.
 
 name: Update docs
-permissions: {}
 
 on:
   release:
-    types:
-      - created
-      - edited
-      - deleted
+    types: [created, edited, deleted]
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
@@ -77,23 +73,17 @@ jobs:
       - name: Update RTD project
         # changing the default branch in readthedocs makes "latest" point to that branch/tag
         # we can also update other properties like description, etc.
-        if: steps.check.outputs.isLatestRelease == 'true'
+        if: >-
+          steps.check.outputs.isLatestRelease == 'true'
         run: |
           json_body=$(jq -n \
             --arg default_branch "${TAG}" \
             --arg description "${{ github.event.repository.description }}" \
             '{default_branch: $default_branch}')
 
-          # change the default branch to the latest release
           curl \
             -X PATCH \
             -H "Authorization: Token ${RTD_TOKEN}" \
+              https://readthedocs.org/api/v3/projects/${RTD_SLUG}/ \
             -H "Content-Type: application/json" \
-            https://readthedocs.org/api/v3/projects/${RTD_SLUG}/ \
             -d "$json_body"
-
-          # trigger a build for the latest version
-          curl \
-            -X POST \
-            -H "Authorization: Token ${RTD_TOKEN}" \
-            https://readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/latest/builds/

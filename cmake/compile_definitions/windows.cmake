@@ -9,10 +9,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 # gcc complains about misleading indentation in some mingw includes
 list(APPEND SUNSHINE_COMPILE_OPTIONS -Wno-misleading-indentation)
 
-# gcc15 complains about non-template type 'coroutine_handle' used as a template in Windows.Foundation.h
-# can remove after https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120495 is available in mingw-w64
-list(APPEND SUNSHINE_COMPILE_OPTIONS -Wno-template-body)
-
 # see gcc bug 98723
 add_definitions(-DUSE_BOOST_REGEX)
 
@@ -42,7 +38,7 @@ if(NOT DEFINED SUNSHINE_ICON_PATH)
     set(SUNSHINE_ICON_PATH "${CMAKE_SOURCE_DIR}/sunshine.ico")
 endif()
 
-configure_file("${CMAKE_SOURCE_DIR}/src/platform/windows/windows.rc.in" windows.rc @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/src/platform/windows/windows.rs.in" windows.rc @ONLY)
 
 set(PLATFORM_TARGET_FILES
         "${CMAKE_CURRENT_BINARY_DIR}/windows.rc"
@@ -68,26 +64,23 @@ set(OPENSSL_LIBRARIES
         libcrypto.a)
 
 list(PREPEND PLATFORM_LIBRARIES
-        ${CURL_STATIC_LIBRARIES}
-        avrt
-        d3d11
-        D3DCompiler
-        dwmapi
-        dxgi
-        iphlpapi
-        ksuser
-        libssp.a
         libstdc++.a
         libwinpthread.a
-        minhook::minhook
+        libssp.a
         ntdll
-        setupapi
-        shlwapi
-        synchronization.lib
-        userenv
-        ws2_32
+        ksuser
         wsock32
-)
+        ws2_32
+        d3d11 dxgi D3DCompiler
+        setupapi
+        dwmapi
+        userenv
+        synchronization.lib
+        avrt
+        iphlpapi
+        shlwapi
+        PkgConfig::NLOHMANN_JSON
+        ${CURL_STATIC_LIBRARIES})
 
 if(SUNSHINE_ENABLE_TRAY)
     list(APPEND PLATFORM_TARGET_FILES

@@ -1,12 +1,6 @@
 # Contributing
 Read our contribution guide in our organization level
-[docs](https://docs.lizardbyte.dev/latest/developers/contributing.html).
-
-## Recommended Tools
-
-| Tool                                                                                                                                                                           | Description                                                                                                                                                                           |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| <a href="https://www.jetbrains.com/clion/"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/CLion_icon.svg" width="30" height="30"></a><br>CLion | Recommended IDE for C and C++ development. Free for non-commercial use. |
+[docs](https://lizardbyte.readthedocs.io/en/latest/developers/contributing.html).
 
 ## Project Patterns
 
