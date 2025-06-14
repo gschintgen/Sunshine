@@ -94,14 +94,13 @@ body:
         - Linux - AUR (Third Party)
         - Linux - deb
         - Linux - Docker
-        - Linux - Fedora Copr
         - Linux - flathub/flatpak
         - Linux - Homebrew
         - Linux - LizardByte/pacman-repo
         - Linux - nixpkgs (Third Party)
         - Linux - pkg.tar.zst
+        - Linux - Fedora Copr
         - Linux - solus (Third Party)
-        - Linux - Unraid (Third Party)
         - macOS - Homebrew
         - macOS - Portfile
         - Windows - Chocolatey (Third Party)
@@ -124,7 +123,7 @@ body:
         - AMD
         - Apple Silicon
         - Intel
-        - NVIDIA
+        - Nvidia
         - none (software encoding)
         - n/a
     validations:
@@ -150,7 +149,7 @@ body:
       description: The capture method being used.
       options:
         - AVCaptureScreen (macOS)
-        - KMS (Linux)
+        - KMX (Linux)
         - NvFBC (Linux)
         - wlroots (Linux)
         - X11 (Linux)

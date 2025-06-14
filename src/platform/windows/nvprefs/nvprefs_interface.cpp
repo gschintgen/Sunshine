@@ -39,7 +39,8 @@ namespace nvprefs {
     unload();
   }
 
-  bool nvprefs_interface::load() {
+  bool
+  nvprefs_interface::load() {
     if (!pimpl->loaded) {
       // Check %ProgramData% variable, need it for storing undo file
       wchar_t program_data_env[MAX_PATH];
@@ -60,7 +61,8 @@ namespace nvprefs {
     return pimpl->loaded;
   }
 
-  void nvprefs_interface::unload() {
+  void
+  nvprefs_interface::unload() {
     if (pimpl->loaded) {
       // Unload dynamically loaded nvapi library
       pimpl->driver_settings.destroy();
@@ -68,10 +70,9 @@ namespace nvprefs {
     }
   }
 
-  bool nvprefs_interface::restore_from_and_delete_undo_file_if_exists() {
-    if (!pimpl->loaded) {
-      return false;
-    }
+  bool
+  nvprefs_interface::restore_from_and_delete_undo_file_if_exists() {
+    if (!pimpl->loaded) return false;
 
     // Check for undo file from previous improper termination
     bool access_denied = false;
@@ -81,10 +82,12 @@ namespace nvprefs {
       if (auto undo_data = undo_file->read_undo_data()) {
         if (pimpl->driver_settings.restore_global_profile_to_undo(*undo_data) && pimpl->driver_settings.save_settings()) {
           info_message("Restored global profile settings from undo file - deleting the file");
-        } else {
+        }
+        else {
           error_message("Failed to restore global profile settings from undo file, deleting the file anyway");
         }
-      } else {
+      }
+      else {
         error_message("Coulnd't read undo file, deleting the file anyway");
       }
 
@@ -92,7 +95,8 @@ namespace nvprefs {
         error_message("Couldn't delete undo file");
         return false;
       }
-    } else if (access_denied) {
+    }
+    else if (access_denied) {
       error_message("Couldn't open undo file from previous improper termination, or confirm that there's no such file");
       return false;
     }
@@ -100,41 +104,43 @@ namespace nvprefs {
     return true;
   }
 
-  bool nvprefs_interface::modify_application_profile() {
-    if (!pimpl->loaded) {
-      return false;
-    }
+  bool
+  nvprefs_interface::modify_application_profile() {
+    if (!pimpl->loaded) return false;
 
     // Modify and save sunshine.exe application profile settings, if needed
     bool modified = false;
     if (!pimpl->driver_settings.check_and_modify_application_profile(modified)) {
       error_message("Failed to modify application profile settings");
       return false;
-    } else if (modified) {
+    }
+    else if (modified) {
       if (pimpl->driver_settings.save_settings()) {
         info_message("Modified application profile settings");
-      } else {
+      }
+      else {
         error_message("Couldn't save application profile settings");
         return false;
       }
-    } else {
+    }
+    else {
       info_message("No need to modify application profile settings");
     }
 
     return true;
   }
 
-  bool nvprefs_interface::modify_global_profile() {
-    if (!pimpl->loaded) {
-      return false;
-    }
+  bool
+  nvprefs_interface::modify_global_profile() {
+    if (!pimpl->loaded) return false;
 
     // Modify but not save global profile settings, if needed
     std::optional<undo_data_t> undo_data;
     if (!pimpl->driver_settings.check_and_modify_global_profile(undo_data)) {
       error_message("Couldn't modify global profile settings");
       return false;
-    } else if (!undo_data) {
+    }
+    else if (!undo_data) {
       info_message("No need to modify global profile settings");
       return true;
     }
@@ -160,7 +166,8 @@ namespace nvprefs {
       if (pimpl->undo_data) {
         // Merge undo data if settings has been modified externally since our last modification
         pimpl->undo_data->merge(*undo_data);
-      } else {
+      }
+      else {
         pimpl->undo_data = undo_data;
       }
 
@@ -191,14 +198,14 @@ namespace nvprefs {
     return true;
   }
 
-  bool nvprefs_interface::owning_undo_file() {
+  bool
+  nvprefs_interface::owning_undo_file() {
     return pimpl->undo_file.has_value();
   }
 
-  bool nvprefs_interface::restore_global_profile() {
-    if (!pimpl->loaded || !pimpl->undo_data || !pimpl->undo_file) {
-      return false;
-    }
+  bool
+  nvprefs_interface::restore_global_profile() {
+    if (!pimpl->loaded || !pimpl->undo_data || !pimpl->undo_file) return false;
 
     // Restore global profile settings with undo data
     if (pimpl->driver_settings.restore_global_profile_to_undo(*pimpl->undo_data) &&
@@ -210,7 +217,8 @@ namespace nvprefs {
       }
       pimpl->undo_data = std::nullopt;
       pimpl->undo_file = std::nullopt;
-    } else {
+    }
+    else {
       error_message("Couldn't restore global profile settings");
       return false;
     }

@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import Checkbox from "../../../Checkbox.vue";
 
 const props = defineProps([
   'platform',
@@ -30,13 +29,13 @@ const config = ref(props.config)
         <option value="forced">{{ $t('config.vt_software_forced') }}</option>
       </select>
     </div>
-    <Checkbox class="mb-3"
-              id="vt_realtime"
-              desc=""
-              locale-prefix="config"
-              v-model="config.vt_realtime"
-              default="true"
-    ></Checkbox>
+    <div class="mb-3">
+      <label for="vt_realtime" class="form-label">{{ $t('config.vt_realtime') }}</label>
+      <select id="vt_realtime" class="form-select" v-model="config.vt_realtime">
+        <option value="enabled">{{ $t('_common.enabled') }}</option>
+        <option value="disabled">{{ $t('_common.disabled') }}</option>
+      </select>
+    </div>
   </div>
 </template>
 

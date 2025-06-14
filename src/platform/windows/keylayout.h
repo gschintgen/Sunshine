@@ -4,7 +4,6 @@
  */
 #pragma once
 
-// standard includes
 #include <array>
 #include <cstdint>
 
